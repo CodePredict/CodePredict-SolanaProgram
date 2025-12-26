@@ -1,126 +1,194 @@
-# Solana Program для Polymarket
+# Solana Program for Polymarket
 
-Прогнозный рынок на блокчейне Solana, реализованный с использованием чистой архитектуры на Go.
+A prediction market on Solana blockchain, implemented using clean architecture in Go.
 
-## Архитектура
+## Architecture
 
-Проект следует принципам чистой архитектуры (Clean Architecture) и разделен на следующие слои:
+The project follows clean architecture principles and is divided into the following layers:
 
 ### Domain Layer (`internal/domain/`)
-- **entities/**: Бизнес-сущности (Market, Position, Account)
-- **repositories/**: Интерфейсы репозиториев
-- **services/**: Интерфейсы бизнес-логики
+- **entities/**: Business entities (Market, Position, Account)
+- **repositories/**: Repository interfaces
+- **services/**: Business logic interfaces
 
 ### Application Layer (`internal/application/`)
-- **usecases/**: Сценарии использования (CreateMarket, ResolveMarket, CreatePosition)
+- **usecases/**: Use cases (CreateMarket, ResolveMarket, CreatePosition, CloseMarket)
 
 ### Infrastructure Layer (`internal/infrastructure/`)
-- **solana/**: Реализация работы с Solana (Program, AccountManager)
-- **repositories/**: Реализация репозиториев для Solana
-- **services/**: Реализация сервисов
+- **solana/**: Full Solana integration:
+  - `program.go` - Solana program
+  - `account_manager.go` - Account management
+  - `account_validator.go` - Account validation
+  - `borsh_serializer.go` - Borsh serialization/deserialization
+  - `instruction_builder.go` - Instruction building
+  - `transaction_handler.go` - Transaction handling
+  - `pda_manager.go` - PDA (Program Derived Addresses) management
+  - `config.go` - Configuration
+  - `rent_calculator.go` - Rent calculation
+  - `error_handler.go` - Error handling
+  - `logger.go` - Logging
+- **repositories/**: Solana repository implementations:
+  - `solana_market_repository.go` - Market repository
+  - `solana_position_repository.go` - Position repository
+  - `solana_account_repository.go` - Account repository
+  - `solana_market_index_repository.go` - Market indexing
+  - `solana_position_index_repository.go` - Position indexing
+- **services/**: Service implementations
 
 ### Presentation Layer (`internal/presentation/`)
-- **instructions/**: Обработчики Solana инструкций
+- **instructions/**: Solana instruction handlers:
+  - `instruction_handler.go` - Main handler
+  - `market_handlers.go` - Market handlers
+  - `position_handlers.go` - Position handlers
+  - `instruction_validator.go` - Instruction validation
 
 ### Shared (`pkg/`)
-- **errors/**: Общие типы ошибок
-- **utils/**: Утилиты
+- **errors/**: Common error types
+- **utils/**: Utilities
+- **solana/**: Solana utilities (key conversion, lamports, etc.)
 
-## Структура проекта
+## Project Structure
 
 ```
 .
 ├── cmd/
 │   └── program/
-│       └── main.go              # Точка входа программы
+│       └── main.go              # Program entry point
 ├── internal/
-│   ├── domain/                  # Доменный слой
-│   │   ├── entities/            # Сущности
-│   │   ├── repositories/        # Интерфейсы репозиториев
-│   │   └── services/            # Интерфейсы сервисов
-│   ├── application/             # Слой приложения
-│   │   └── usecases/            # Сценарии использования
-│   ├── infrastructure/          # Слой инфраструктуры
-│   │   ├── solana/              # Solana интеграция
-│   │   ├── repositories/        # Реализация репозиториев
-│   │   └── services/            # Реализация сервисов
-│   └── presentation/            # Слой представления
-│       └── instructions/        # Обработчики инструкций
-├── pkg/                         # Общие пакеты
-│   ├── errors/                  # Обработка ошибок
-│   └── utils/                   # Утилиты
-├── go.mod                       # Зависимости
-├── Makefile                     # Команды сборки
-└── README.MD                    # Документация
+│   ├── domain/                  # Domain layer
+│   │   ├── entities/            # Entities
+│   │   ├── repositories/        # Repository interfaces
+│   │   └── services/            # Service interfaces
+│   ├── application/             # Application layer
+│   │   └── usecases/            # Use cases
+│   ├── infrastructure/          # Infrastructure layer
+│   │   ├── solana/              # Solana integration (10+ files)
+│   │   ├── repositories/        # Repository implementations (5 files)
+│   │   └── services/            # Service implementations
+│   └── presentation/            # Presentation layer
+│       └── instructions/        # Instruction handlers (4 files)
+├── pkg/                         # Shared packages
+│   ├── errors/                  # Error handling
+│   ├── utils/                   # Utilities
+│   └── solana/                  # Solana utilities
+├── go.mod                       # Dependencies
+├── Makefile                     # Build commands
+└── README.MD                    # Documentation
 ```
 
-## Основные сущности
+## Main Entities
 
-### Market (Рынок)
-Представляет прогнозный рынок с возможностью создания, закрытия и разрешения.
+### Market
+Represents a prediction market with the ability to create, close, and resolve.
 
-### Position (Позиция)
-Представляет позицию пользователя на рынке (YES или NO).
+### Position
+Represents a user's position on a market (YES or NO).
 
-## Инструкции Solana
+## Solana Integrations
 
-1. **CreateMarket**: Создание нового рынка
-2. **ResolveMarket**: Разрешение рынка (Yes/No)
-3. **CreatePosition**: Создание позиции на рынке
-4. **CloseMarket**: Закрытие рынка
+### PDA (Program Derived Addresses)
+- PDA management for markets, positions, and indexes
+- Automatic address calculation
 
-## Установка и запуск
+### Borsh Serialization
+- Full account serialization/deserialization
+- MarketAccount and PositionAccount support
 
-### Требования
-- Go 1.21 или выше
-- Solana CLI (для деплоя)
+### Validation
+- Account validation (owner, size, permissions)
+- PDA validation
+- Instruction validation
 
-### Установка зависимостей
+### Transactions
+- Instruction building
+- Transaction sending
+- Status tracking
+
+### Indexing
+- Market indexes
+- User position indexes
+- Market position indexes
+
+## Solana Instructions
+
+1. **CreateMarket**: Create a new market
+2. **ResolveMarket**: Resolve a market (Yes/No)
+3. **CreatePosition**: Create a position on a market
+4. **CloseMarket**: Close a market
+
+## Installation and Setup
+
+### Requirements
+- Go 1.21 or higher
+- Solana CLI (for deployment)
+
+### Install Dependencies
 ```bash
 make deps
+# or
+go mod tidy
 ```
 
-### Сборка
+### Build
 ```bash
 make build
 ```
 
-### Тестирование
+### Test
 ```bash
 make test
 ```
 
-### Форматирование кода
+### Format Code
 ```bash
 make fmt
 ```
 
-### Линтинг
+### Lint
 ```bash
 make lint
 ```
 
-## Разработка
+## Development
 
-### Добавление новой функциональности
+### Adding New Functionality
 
-1. **Доменный слой**: Определите сущности и интерфейсы в `internal/domain/`
-2. **Слой приложения**: Создайте use case в `internal/application/usecases/`
-3. **Инфраструктура**: Реализуйте репозитории в `internal/infrastructure/repositories/`
-4. **Представление**: Добавьте обработчик инструкций в `internal/presentation/instructions/`
+1. **Domain Layer**: Define entities and interfaces in `internal/domain/`
+2. **Application Layer**: Create a use case in `internal/application/usecases/`
+3. **Infrastructure**: Implement repositories in `internal/infrastructure/repositories/`
+4. **Presentation**: Add an instruction handler in `internal/presentation/instructions/`
 
-## Примечания
+## Solana Components
 
-- Программа использует Program Derived Addresses (PDA) для хранения данных
-- Сериализация данных выполняется в формате Borsh (стандарт для Solana)
-- В production версии необходимо добавить:
-  - Полную реализацию сериализации/десериализации
-  - Индексацию для поиска рынков и позиций
-  - Валидацию прав доступа
-  - Обработку ошибок и логирование
-  - Тесты
+### AccountManager
+Solana account management, PDA operations.
 
-## Лицензия
+### BorshSerializer
+Data serialization and deserialization in Borsh format.
+
+### AccountValidator
+Account validation, permission checking.
+
+### InstructionBuilder
+Building Solana instructions for various operations.
+
+### TransactionHandler
+Transaction sending and tracking.
+
+### PDAManager
+Program Derived Addresses management for all entities.
+
+### RentCalculator
+Rent calculation for accounts.
+
+## Notes
+
+- The program uses Program Derived Addresses (PDA) for data storage
+- Data serialization is performed in Borsh format (Solana standard)
+- Full integration with Solana RPC for blockchain operations
+- Indexing for efficient market and position search
+- Validation of all operations at the instruction level
+
+## License
 
 MIT
-
