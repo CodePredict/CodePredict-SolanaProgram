@@ -41,8 +41,20 @@ func main() {
 	accountValidator := solana.NewAccountValidator(program)
 	pdaManager := solana.NewPDAManager(program)
 	rentCalculator := solana.NewRentCalculator(rpcClient)
-	transactionHandler := solana.NewTransactionHandler(rpcClient, program)
+	transactionHandler := solana.NewTransactionHandler(rpcClient, program, logger)
 	instructionBuilder := solana.NewInstructionBuilder(programID)
+
+	// Initialize wallet components
+	walletStorage, err := solana.NewWalletStorage("", logger)
+	if err != nil {
+		logger.Error("Failed to initialize wallet storage", zap.Error(err))
+		return
+	}
+	walletFactory := solana.NewWalletFactory(walletStorage, logger)
+	walletService := solana.NewWalletService(rpcClient, logger)
+	
+	_ = walletFactory
+	_ = walletService
 
 	// Initialize account repository
 	accountRepo := repositories.NewSolanaAccountRepository(rpcClient, accountManager, borshSerializer, accountValidator)
